@@ -1,0 +1,16 @@
+.TypeArea {
+  max-width: 80%;
+  text-align: -webkit-left;
+}
+
+.Container {
+  text-align: -webkit-center;
+}
+
+.miss {
+  color: red;
+}
+
+.completed {
+  color: gray;
+}
