@@ -48,6 +48,7 @@ function TypeAreaMockWithRuby() {
   })
   const start = (() => {
     setonType(true)
+    setWordsCount(0)
   })
 
   if(onType) {
