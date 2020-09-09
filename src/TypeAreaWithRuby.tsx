@@ -12,7 +12,7 @@ function TypeAreaWithRuby(props: {words: TypewellWord[], state: TypingState}) {
     <div>
       {props.words.map((word) => {
         return (
-          <ruby>
+          <ruby className={word.completed ? 'completed' : ''}>
             {word.kanji}<rt>{word.hiragana}</rt>
           </ruby>
         )

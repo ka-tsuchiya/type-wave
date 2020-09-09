@@ -4,6 +4,7 @@ import { randomOne } from "./sanpleWords"
 export type TypewellWord = {
   hiragana: string
   kanji: string
+  completed: boolean
 }
 
 export function generateWord(length: number): TypewellWord {
@@ -21,6 +22,7 @@ export function generateWord(length: number): TypewellWord {
   }
   return {
     hiragana: hiragana,
-    kanji: kanji
+    kanji: kanji,
+    completed: false
   }
 }
