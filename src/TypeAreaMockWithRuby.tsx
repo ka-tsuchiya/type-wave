@@ -17,10 +17,12 @@ function TypeAreaMockWithRuby() {
     setWords(wordSplit(newWord))
   })
   const click = (() => {
-    newWord()
-    start()
-    let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
-    element?.focus()
+    setTimeout(() => {
+      newWord()
+      start()
+      let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
+      element?.focus()
+    }, 1000);
   })
   const keyPress = (e: React.KeyboardEvent) => {
     let s = nextState(e.key, state)
@@ -41,6 +43,8 @@ function TypeAreaMockWithRuby() {
   }
   const escape = (() => {
     setonType(false)
+    let button = document.getElementById("startButton")
+    button?.focus()
   })
   const start = (() => {
     setonType(true)
@@ -50,7 +54,7 @@ function TypeAreaMockWithRuby() {
 
     return (
       <div className="Container">
-        <button onClick={click}>
+        <button onClick={click} id="startButton">
           新しいワード
         </button>
         <div onKeyPress={keyPress} onKeyDown={keyDown} tabIndex={0} className="TypeArea">
