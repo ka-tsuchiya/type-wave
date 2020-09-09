@@ -24,22 +24,6 @@ function TypeAreaWithRuby(props: {words: TypewellWord[], state: TypingState}) {
   )
 }
 
-function Kanji(props: {text: string}) {
-  return (
-    <div className="Kanji">
-      {props.text}
-    </div>
-  )
-}
-
-function Hiragana(props: {text: string}) {
-  return (
-    <div className="Hiragana">
-      {props.text}
-    </div>
-  )
-}
-
 function ReferenceRaman(props: TypeProps) {
   // let state = props.state
   return (
