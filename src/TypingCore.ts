@@ -96,7 +96,7 @@ const conversionTable: ConvertElement[] = [
   {hiragana: "け", ramans: ["ke"]},
   {hiragana: "こ", ramans: ["ko", "co"]},
   {hiragana: "さ", ramans: ["sa"]},
-  {hiragana: "し", ramans: ["Si"]},
+  {hiragana: "し", ramans: ["si", "sH"]},
   {hiragana: "す", ramans: ["su"]},
   {hiragana: "せ", ramans: ["se"]},
   {hiragana: "そ", ramans: ["so"]},
@@ -325,6 +325,17 @@ export function nextState(c: TypingInput, state: TypingState): TypingState {
         },
         lastInput: c
       }
+    } else if (upper === "H") { // "し"をshiで打つ
+      return {
+        ramans: state.ramans,
+        lastResult: true,
+        index: i,
+        mode: {
+          mode: "Force",
+          forceKey: "i"
+        },
+        lastInput: c
+      }
     } else if (upper === "J"){ // "じゃ"をjyaで打つ
       return {
         ramans: state.ramans,
@@ -347,14 +358,14 @@ export function nextState(c: TypingInput, state: TypingState): TypingState {
         },
         lastInput: c
       }
-    } else if (upper === "S") { // "し"をshiで打つ
+    } else if (upper === "S") { // "つ"をtsuで打つ
       return {
         ramans: state.ramans,
         lastResult: true,
-        index: i+1,
+        index: i,
         mode: {
-          mode: "Allow",
-          allowKey: "h"
+          mode: "Force",
+          forceKey: "u"
         },
         lastInput: c
       }
