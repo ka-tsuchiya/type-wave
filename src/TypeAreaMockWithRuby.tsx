@@ -3,9 +3,9 @@ import { generateWord, TypewellWord } from './TypeWell';
 import { initialState, nextState } from './TypingCore';
 import TypeAreaWithRuby from './TypeAreaWithRuby';
 import CountDownTimer from './CountDownTimer';
+import Timer from './Timer';
 
 function TypeAreaMockWithRuby() {
-  console.log("TypeAreaMockWithRuby")
   const [completedWords, setWordsCount] = useState(0)
   const [onType, setonType] = useState(false)
   const [word, setWord] = useState(generateWord(400))
@@ -13,6 +13,7 @@ function TypeAreaMockWithRuby() {
   const [state, setState] = useState(initialState(word.hiragana))
   const [count, setCount] = useState(0)
   const [buttonEnabled, setButtonEnabled] = useState(true)
+  const [time, setTime] = useState(0)
   const newWord = (() =>{
     let newWord = generateWord(400)
     setWord(newWord)
@@ -36,7 +37,6 @@ function TypeAreaMockWithRuby() {
     }
   }
   const keyDown = (e:React.KeyboardEvent) => {
-    console.log(e.keyCode)
     if(e.keyCode === 27) {
       escape()
     }
@@ -46,12 +46,15 @@ function TypeAreaMockWithRuby() {
     setButtonEnabled(true)
     let button = document.getElementById("startButton")
     button?.focus()
+    setTime(0)
   })
   const start = (() => {
     setonType(true)
     setWordsCount(0)
     let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
     element?.focus()
+    let st = Date.now()
+    timerStart(st)
   })
 
   const countDown = function(n: number){
@@ -68,6 +71,14 @@ function TypeAreaMockWithRuby() {
     }
   }
 
+  const timerStart = ((st: number) => {
+    setInterval(() => {
+      let currentTime = Date.now()
+      let diff = currentTime - st
+      setTime(diff / 1000)
+    }, 20)
+  })
+
   if(onType) {
 
     return (
@@ -75,6 +86,12 @@ function TypeAreaMockWithRuby() {
         <button onClick={click} id="startButton" disabled={true}>
           新しいワード
         </button>
+        <div>
+          <Timer
+            time={time}
+            digit={1}
+          />
+        </div>
         <div onKeyPress={keyPress} onKeyDown={keyDown} tabIndex={0} className="TypeArea">
           <TypeAreaWithRuby
             words={words}
