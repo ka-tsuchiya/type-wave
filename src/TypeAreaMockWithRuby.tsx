@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { generateWord, TypewellWord } from './TypeWell';
 import { initialState, nextState } from './TypingCore';
 import TypeAreaWithRuby from './TypeAreaWithRuby';
@@ -13,14 +13,14 @@ function TypeAreaMockWithRuby() {
   const [state, setState] = useState(initialState(word.hiragana))
   const [count, setCount] = useState(0)
   const [buttonEnabled, setButtonEnabled] = useState(true)
-  const [time, setTime] = useState(0)
-  const newWord = (() =>{
+  const [startTime, setStartTime] = useState(0)
+  const newWord = useCallback((() =>{
     let newWord = generateWord(400)
     setWord(newWord)
     console.log("new word " + newWord.hiragana)
     setState(initialState(newWord.hiragana))
     setWords(wordSplit(newWord))
-  })
+  }), [])
   const click = (() => {
       newWord()
       countDown(3)
@@ -44,20 +44,21 @@ function TypeAreaMockWithRuby() {
   const escape = (() => {
     setonType(false)
     setButtonEnabled(true)
-    let button = document.getElementById("startButton")
-    button?.focus()
-    setTime(0)
+    setTimeout(() => {
+      let button = document.getElementById("startButton")
+      button?.focus()
+    }, 30);
   })
-  const start = (() => {
-    setonType(true)
+  const start = () => {
     setWordsCount(0)
+    let st = Date.now()
+    setStartTime(st)
+    setonType(true)
     let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
     element?.focus()
-    let st = Date.now()
-    timerStart(st)
-  })
+  }
 
-  const countDown = function(n: number){
+  const countDown = useCallback((n: number) => {
     setButtonEnabled(false)
     setCount(n)
     if(!onType){
@@ -69,15 +70,7 @@ function TypeAreaMockWithRuby() {
         }, 1000)
       }
     }
-  }
-
-  const timerStart = ((st: number) => {
-    setInterval(() => {
-      let currentTime = Date.now()
-      let diff = currentTime - st
-      setTime(diff / 1000)
-    }, 20)
-  })
+  }, [])
 
   if(onType) {
 
@@ -88,7 +81,7 @@ function TypeAreaMockWithRuby() {
         </button>
         <div>
           <Timer
-            time={time}
+            startTime={startTime}
             digit={1}
           />
         </div>
@@ -103,7 +96,7 @@ function TypeAreaMockWithRuby() {
   } else {
     return (
       <div className="Container">
-        <button onClick={click} disabled={!buttonEnabled}>
+        <button onClick={click} id="startButton" disabled={!buttonEnabled}>
           新しいワード
         </button>
         <div>
