@@ -286,6 +286,10 @@ export type TypingState = {
   lastInput: TypingInput
 }
 
+export function isFinish(state: TypingState) : boolean {
+  return state.index >= state.ramans[0].length
+}
+
 export function displayRaman(state: TypingState) {
   if(state.mode.mode === "Force") {
     return state.mode.forceKey + state.ramans[0].substr(state.index + 1)

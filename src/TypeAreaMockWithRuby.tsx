@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { generateWord, TypewellWord } from './TypeWell';
-import { initialState, nextState } from './TypingCore';
+import { initialState, isFinish, nextState } from './TypingCore';
 import TypeAreaWithRuby from './TypeAreaWithRuby';
 import CountDownTimer from './CountDownTimer';
 import Timer from './Timer';
@@ -14,6 +14,7 @@ function TypeAreaMockWithRuby() {
   const [count, setCount] = useState(0)
   const [buttonEnabled, setButtonEnabled] = useState(true)
   const [startTime, setStartTime] = useState(0)
+  const [finishTime, setFinishTime] = useState(0) // ms
   const newWord = useCallback((() =>{
     let newWord = generateWord(400)
     setWord(newWord)
@@ -26,6 +27,9 @@ function TypeAreaMockWithRuby() {
       countDown(3)
   })
   const keyPress = (e: React.KeyboardEvent) => {
+    if (isFinish(state)) {
+      return
+    }
     let s = nextState(e.key, state)
     setState(s)
     if(e.key === " " && s.lastResult) {
@@ -34,6 +38,12 @@ function TypeAreaMockWithRuby() {
       let nextWords = words
       nextWords[completedCount-1].completed = true
       setWords(nextWords)
+    }
+    if (isFinish(s)) {
+      let time = Date.now()
+      let elapsed = time - startTime
+
+      setFinishTime(elapsed)
     }
   }
   const keyDown = (e:React.KeyboardEvent) => {
@@ -80,10 +90,17 @@ function TypeAreaMockWithRuby() {
           新しいワード
         </button>
         <div>
-          <Timer
-            startTime={startTime}
-            digit={1}
-          />
+          {
+            isFinish(state) ? (
+              <div>
+                {state.index + "打 / " + (finishTime / 1000).toFixed(3) + "秒 = " + (state.index / finishTime * 60000).toFixed(2) + "kpm"}
+              </div>
+              ) : (
+              <Timer
+              startTime={startTime}
+              digit={1}
+              />
+          )}
         </div>
         <div onKeyPress={keyPress} onKeyDown={keyDown} tabIndex={0} className="TypeArea">
           <TypeAreaWithRuby
