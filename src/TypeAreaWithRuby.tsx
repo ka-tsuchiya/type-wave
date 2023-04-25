@@ -11,9 +11,11 @@ function TypeAreaWithRuby(props: {words: TypewellWord[], state: TypingState}) {
   return (
     <div>
       {props.words.map((word) => {
+        const completed = word.completed
+        let style = completed ? {color: speedColor(600, Number(completed))} : {}
         return (
-          <ruby className={word.completed ? 'completed' : ''}>
-            {word.kanji}<rt>{word.hiragana}</rt>
+          <ruby className={completed ? 'completed' : ''} style={style}>
+            {word.kanji}<rt>{completed ? Number(word.completed).toFixed(1) : word.hiragana}</rt>
           </ruby>
         )
       })}
@@ -35,6 +37,24 @@ function ReferenceRaman(props: TypeProps) {
       />
     </code>
   )
+}
+
+function speedColor(base: number, speed: number) : string {
+  const rate = speed / base
+  const red = (128 / rate / rate)
+  const green = (128 * (rate < 1 ? rate * rate : 1 / rate / rate))
+  const blue = 128 * rate * rate
+  let result = "#"
+  for(let c of [red, green, blue]) {
+    if(c > 255){
+      c = 255
+    } else {
+      c = Math.trunc(c)
+    }
+    const f = ("0" + c.toString(16)).slice(-2)
+    result += f
+  }
+  return result
 }
 
 function Raman(props: {text: string, miss: boolean, completed: string}) {

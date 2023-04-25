@@ -15,6 +15,8 @@ function TypeAreaMockWithRuby() {
   const [buttonEnabled, setButtonEnabled] = useState(true)
   const [startTime, setStartTime] = useState(0)
   const [finishTime, setFinishTime] = useState(0) // ms
+  const [checkPointTime, setCheckPointTime] = useState(0)
+  const [checkPoint, setCheckPoint] = useState(0)
   const newWord = useCallback((() =>{
     let newWord = generateWord(400)
     setWord(newWord)
@@ -27,6 +29,7 @@ function TypeAreaMockWithRuby() {
       countDown(3)
   })
   const keyPress = (e: React.KeyboardEvent) => {
+    let currentTime = Date.now()
     if (isFinish(state)) {
       return
     }
@@ -35,8 +38,14 @@ function TypeAreaMockWithRuby() {
     if(e.key === " " && s.lastResult) {
       let completedCount = completedWords+1
       setWordsCount(completedCount)
+      let k = s.index - checkPoint
+      let checkTime = currentTime - checkPointTime
+      
+      let kpm = wordKPM(k, checkTime)
+      setCheckPoint(s.index)
+      setCheckPointTime(currentTime)
       let nextWords = words
-      nextWords[completedCount-1].completed = true
+      nextWords[completedCount-1].completed = kpm
       setWords(nextWords)
     }
     if (isFinish(s)) {
@@ -62,6 +71,8 @@ function TypeAreaMockWithRuby() {
   const start = () => {
     setWordsCount(0)
     let st = Date.now()
+    setCheckPointTime(st)
+    setCheckPoint(0)
     setStartTime(st)
     setonType(true)
     let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
@@ -124,6 +135,10 @@ function TypeAreaMockWithRuby() {
       </div>
     )
   }
+}
+
+function wordKPM(k: number, timems: number): number {
+  return k * 60000 / timems
 }
 
 function wordSplit(word: TypewellWord) {
