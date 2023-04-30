@@ -8,7 +8,8 @@ import Timer from './Timer';
 function TypeAreaMockWithRuby() {
   const [completedWords, setWordsCount] = useState(0)
   const [onType, setonType] = useState(false)
-  const [word, setWord] = useState(generateWord(400))
+  const [wordLength, setWordLength] = useState(400)
+  const [word, setWord] = useState(generateWord(wordLength))
   const [words, setWords] = useState(wordSplit(word))
   const [state, setState] = useState(initialState(word.hiragana))
   const [count, setCount] = useState(0)
@@ -18,12 +19,12 @@ function TypeAreaMockWithRuby() {
   const [checkPointTime, setCheckPointTime] = useState(0)
   const [checkPoint, setCheckPoint] = useState(0)
   const newWord = useCallback((() =>{
-    let newWord = generateWord(400)
+    let newWord = generateWord(wordLength)
     setWord(newWord)
     console.log("new word " + newWord.hiragana)
     setState(initialState(newWord.hiragana))
     setWords(wordSplit(newWord))
-  }), [])
+  }), [wordLength])
   const click = (() => {
       newWord()
       countDown(3)
@@ -93,48 +94,75 @@ function TypeAreaMockWithRuby() {
     }
   }, [])
 
+  const selectLength = (value: string) => {
+    console.log(value)
+    setWordLength(Number(value))
+  }
+
   if(onType) {
 
     return (
-      <div className="Container">
-        <button onClick={click} id="startButton" disabled={true}>
-          新しいワード
-        </button>
-        <div>
-          {
-            isFinish(state) ? (
-              <div>
-                {state.index + "打 / " + (finishTime / 1000).toFixed(3) + "秒 = " + (state.index / finishTime * 60000).toFixed(2) + "kpm"}
-              </div>
-              ) : (
-              <Timer
-              startTime={startTime}
-              digit={1}
+      <div>
+        <SelectTypeLength
+        onSelect={selectLength}
+        disabled={true}
+        />
+        <div className="Container">
+          <button onClick={click} id="startButton" disabled={true}>
+            スタート
+          </button>
+          <div>
+            {
+              isFinish(state) ? (
+                <div>
+                  {state.index + "打 / " + (finishTime / 1000).toFixed(3) + "秒 = " + (state.index / finishTime * 60000).toFixed(2) + "kpm"}
+                </div>
+                ) : (
+                  <Timer
+                  startTime={startTime}
+                  digit={1}
+                  />
+                  )}
+          </div>
+          <div onKeyPress={keyPress} onKeyDown={keyDown} tabIndex={0} className="TypeArea">
+            <TypeAreaWithRuby
+              words={words}
+              state={state}
               />
-          )}
-        </div>
-        <div onKeyPress={keyPress} onKeyDown={keyDown} tabIndex={0} className="TypeArea">
-          <TypeAreaWithRuby
-            words={words}
-            state={state}
-            />
+          </div>
         </div>
       </div>
     )
   } else {
     return (
-      <div className="Container">
-        <button onClick={click} id="startButton" disabled={!buttonEnabled}>
-          新しいワード
-        </button>
-        <div>
-          <CountDownTimer
-           count={count}
-           />
+      <div>
+        <SelectTypeLength
+          onSelect={selectLength}
+          disabled={false}
+        />
+        <div className="Container">
+          <button onClick={click} id="startButton" disabled={!buttonEnabled}>
+            スタート
+          </button>
+          <div>
+            <CountDownTimer
+            count={count}
+            />
+          </div>
         </div>
       </div>
     )
   }
+}
+
+function SelectTypeLength(props: {onSelect: (value: string) => void, disabled: boolean}) {
+  return (
+    <select onChange={(e) => props.onSelect(e.target.value)} disabled={props.disabled}>
+          <option value="100">100打</option>
+          <option value="200">200打</option>
+          <option value="400" selected>400打</option>
+        </select>
+  )
 }
 
 function wordKPM(k: number, timems: number): number {
