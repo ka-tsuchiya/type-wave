@@ -9,6 +9,7 @@ function TypeAreaMockWithRuby() {
   const [completedWords, setWordsCount] = useState(0)
   const [onType, setonType] = useState(false)
   const [wordLength, setWordLength] = useState(400)
+  const [baseKPM, setBaseKPM] = useState(600)
   const [word, setWord] = useState(generateWord(wordLength))
   const [words, setWords] = useState(wordSplit(word))
   const [state, setState] = useState(initialState(word.hiragana))
@@ -95,14 +96,21 @@ function TypeAreaMockWithRuby() {
   }, [])
 
   const selectLength = (value: string) => {
-    console.log(value)
     setWordLength(Number(value))
   }
+  const selectBaseKPM = (value: string) => {
+    setBaseKPM(Number(value))
+  }
+  
 
   if(onType) {
 
     return (
       <div>
+        <SelectBaseSpeed
+        onSelect={selectBaseKPM}
+        disabled={true} 
+        />
         <SelectTypeLength
         onSelect={selectLength}
         disabled={true}
@@ -128,6 +136,7 @@ function TypeAreaMockWithRuby() {
             <TypeAreaWithRuby
               words={words}
               state={state}
+              baseKPM={baseKPM}
               />
           </div>
         </div>
@@ -136,6 +145,10 @@ function TypeAreaMockWithRuby() {
   } else {
     return (
       <div>
+        <SelectBaseSpeed
+        onSelect={selectBaseKPM}
+        disabled={false}
+        />
         <SelectTypeLength
           onSelect={selectLength}
           disabled={false}
@@ -162,6 +175,24 @@ function SelectTypeLength(props: {onSelect: (value: string) => void, disabled: b
           <option value="200">200打</option>
           <option value="400" selected>400打</option>
         </select>
+  )
+}
+
+function SelectBaseSpeed(props: {onSelect: (value: string) => void, disabled: boolean}) {
+  return (
+    <select onChange={(e) => props.onSelect(e.target.value)} disabled={props.disabled}>
+      <option value="200">200kpm</option>
+      <option value="300">300kpm</option>
+      <option value="400">400kpm</option>
+      <option value="500">500kpm</option>
+      <option value="600" selected>600kpm</option>
+      <option value="700">700kpm</option>
+      <option value="800">800kpm</option>
+      <option value="900">900kpm</option>
+      <option value="1000">1000kpm</option>
+      <option value="1100">1100kpm</option>
+      <option value="1200">1200kpm</option>
+    </select>
   )
 }
 

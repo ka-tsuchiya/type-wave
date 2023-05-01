@@ -7,12 +7,12 @@ type TypeProps = {
   state: TypingState
 }
 
-function TypeAreaWithRuby(props: {words: TypewellWord[], state: TypingState}) {
+function TypeAreaWithRuby(props: {words: TypewellWord[], state: TypingState, baseKPM: number}) {
   return (
     <div>
       {props.words.map((word) => {
         const completed = word.completed
-        let style = completed ? {color: speedColor(600, Number(completed))} : {}
+        let style = completed ? {color: speedColor(props.baseKPM, Number(completed))} : {}
         return (
           <ruby className={completed ? 'completed' : ''} style={style}>
             {word.kanji}<rt>{completed ? Number(word.completed).toFixed(1) : word.hiragana}</rt>
