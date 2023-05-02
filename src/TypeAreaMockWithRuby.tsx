@@ -19,6 +19,7 @@ function TypeAreaMockWithRuby() {
   const [finishTime, setFinishTime] = useState(0) // ms
   const [checkPointTime, setCheckPointTime] = useState(0)
   const [checkPoint, setCheckPoint] = useState(0)
+  const [resultText, setResultText] = useState("乗るしかない、このビッグウェーブに")
   const newWord = useCallback((() =>{
     let newWord = generateWord(wordLength)
     setWord(newWord)
@@ -55,6 +56,9 @@ function TypeAreaMockWithRuby() {
       let elapsed = time - startTime
 
       setFinishTime(elapsed)
+      const length = s.index
+      
+      setResultText(makeResultText(elapsed, length))
     }
   }
   const keyDown = (e:React.KeyboardEvent) => {
@@ -107,6 +111,11 @@ function TypeAreaMockWithRuby() {
 
     return (
       <div>
+        <button
+          onClick={() => window.open(`http://twitter.com/share?url=garyeo.tk/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
+          >
+            Twitterで共有する
+        </button>
         <SelectBaseSpeed
         onSelect={selectBaseKPM}
         disabled={true} 
@@ -145,6 +154,11 @@ function TypeAreaMockWithRuby() {
   } else {
     return (
       <div>
+        <button
+          onClick={() => window.open(`http://twitter.com/share?url=garyeo.tk/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
+          >
+            Twitterで共有する
+        </button>
         <SelectBaseSpeed
         onSelect={selectBaseKPM}
         disabled={false}
@@ -212,6 +226,10 @@ function wordSplit(word: TypewellWord) {
     }
   }
   return result
+}
+
+function makeResultText(timems: number, length: number) : string {
+  return length + "打を" + (timems / 1000).toFixed(3) + "秒で打って" + (length / timems * 60000).toFixed(2) + "kpmでした"
 }
 
 export default TypeAreaMockWithRuby
