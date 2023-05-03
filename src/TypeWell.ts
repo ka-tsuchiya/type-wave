@@ -26,3 +26,22 @@ export function generateWord(length: number): TypewellWord {
     completed: false
   }
 }
+
+export function sortAndJoin(words: TypewellWord[]) : TypewellWord {
+  const sorted = words.sort((a,b) => {
+    if (a.completed > b.completed) {
+      return 1
+    }
+    if (a.completed < b.completed) {
+      return -1
+    }
+    return 0
+  })
+  const hiragana = sorted.map((word) => word.hiragana.split("　")[0]).join("　")
+  const kanji = sorted.map((word) => word.kanji.split("　")[0]).join("　")
+  return {
+    hiragana: hiragana,
+    kanji: kanji,
+    completed: false
+  }
+}

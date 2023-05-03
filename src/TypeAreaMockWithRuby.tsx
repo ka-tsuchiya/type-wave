@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { generateWord, TypewellWord } from './TypeWell';
+import { generateWord, sortAndJoin, TypewellWord } from './TypeWell';
 import { initialState, isFinish, nextState } from './TypingCore';
 import TypeAreaWithRuby from './TypeAreaWithRuby';
 import CountDownTimer from './CountDownTimer';
@@ -27,9 +27,19 @@ function TypeAreaMockWithRuby() {
     setState(initialState(newWord.hiragana))
     setWords(wordSplit(newWord))
   }), [wordLength])
+  const sortWord = useCallback(() => {
+    const newWord = sortAndJoin(words)
+    setWord(newWord)
+    setState(initialState(newWord.hiragana))
+    setWords(wordSplit(newWord))
+  }, [resultText])
   const click = (() => {
       newWord()
       countDown(3)
+  })
+  const sortedClick = (() => {
+    sortWord()
+    countDown(3)
   })
   const keyPress = (e: React.KeyboardEvent) => {
     let currentTime = Date.now()
@@ -57,7 +67,15 @@ function TypeAreaMockWithRuby() {
 
       setFinishTime(elapsed)
       const length = s.index
+      let nextWords = words
+
+      // 最後のワードのkpm計算
+      let k = s.index - checkPoint
+      let checkTime = currentTime - checkPointTime
+      let kpm = wordKPM(k, checkTime)
+      nextWords[completedWords].completed = kpm
       
+      setWords(nextWords)
       setResultText(makeResultText(elapsed, length))
     }
   }
@@ -128,6 +146,9 @@ function TypeAreaMockWithRuby() {
           <button onClick={click} id="startButton" disabled={true}>
             スタート
           </button>
+          <button disabled={true}>
+            ソートしてやり直し
+          </button>
           <div>
             {
               isFinish(state) ? (
@@ -170,6 +191,9 @@ function TypeAreaMockWithRuby() {
         <div className="Container">
           <button onClick={click} id="startButton" disabled={!buttonEnabled}>
             スタート
+          </button>
+          <button onClick={sortedClick} disabled={!buttonEnabled || (finishTime == 0)}>
+          ソートしてやり直し
           </button>
           <div>
             <CountDownTimer
