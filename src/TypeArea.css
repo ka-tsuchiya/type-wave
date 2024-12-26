@@ -8,6 +8,15 @@
   height: 90vh;
 }
 
+.japanese {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.word {
+  margin: 0 1rem;
+}
+
 .miss {
   color: red;
 }

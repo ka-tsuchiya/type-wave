@@ -10,15 +10,19 @@ type TypeProps = {
 function TypeAreaWithRuby(props: {words: TypewellWord[], state: TypingState, baseKPM: number}) {
   return (
     <div>
-      {props.words.map((word) => {
-        const completed = word.completed
-        let style = completed ? {color: speedColor(props.baseKPM, Number(completed))} : {}
-        return (
-          <ruby className={completed ? 'completed' : ''} style={style}>
-            {word.kanji}<rt>{completed ? Number(word.completed).toFixed(1) : word.hiragana}</rt>
-          </ruby>
-        )
-      })}
+      <div className="japanese">
+        {props.words.map((word) => {
+          const completed = word.completed
+          let style = completed ? {color: speedColor(props.baseKPM, Number(completed))} : {}
+          return (
+              <div className="word">
+              <ruby className={completed ? 'completed' : ''} style={style}>
+                {word.kanji}<rt>{completed ? Number(word.completed).toFixed(1) : word.hiragana}</rt>
+              </ruby>
+            </div>
+          )
+        })}
+      </div>
       <ReferenceRaman
         state={props.state}
       />
