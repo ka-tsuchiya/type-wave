@@ -130,7 +130,7 @@ function TypeAreaMockWithRuby() {
     return (
       <div>
         <button
-          onClick={() => window.open(`http://twitter.com/share?url=garyeo.tk/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
+          onClick={() => window.open(`http://twitter.com/share?url=tk2-256-37539.vs.sakura.ne.jp/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
           >
             Twitterで共有する
         </button>
@@ -176,7 +176,7 @@ function TypeAreaMockWithRuby() {
     return (
       <div>
         <button
-          onClick={() => window.open(`http://twitter.com/share?url=garyeo.tk/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
+          onClick={() => window.open(`http://twitter.com/share?url=tk2-256-37539.vs.sakura.ne.jp/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
           >
             Twitterで共有する
         </button>
