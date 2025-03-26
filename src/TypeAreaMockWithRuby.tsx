@@ -1,38 +1,65 @@
 import React, { useCallback, useState } from 'react';
 import { generateWord, sortAndJoin, TypewellWord } from './TypeWell';
-import { initialState, isFinish, nextState } from './TypingCore';
+import { initialState as createInitialTypingState, isFinish, nextState } from './TypingCore';
 import TypeAreaWithRuby from './TypeAreaWithRuby';
 import CountDownTimer from './CountDownTimer';
 import Timer from './Timer';
 
+// 型定義の追加
+interface TypingState {
+  completedWords: number;
+  isTyping: boolean;
+  wordLength: number;
+  baseKPM: number;
+  word: TypewellWord;
+  words: TypewellWord[];
+  state: ReturnType<typeof createInitialTypingState>;
+  count: number;
+  buttonEnabled: boolean;
+  startTime: number;
+  finishTime: number;
+  checkPointTime: number;
+  checkPoint: number;
+}
+
+// 初期状態の定義
+const initialTypingState: TypingState = {
+  completedWords: 0,
+  isTyping: false,
+  wordLength: 400,
+  baseKPM: 600,
+  word: generateWord(400),
+  words: wordSplit(generateWord(400)),
+  state: createInitialTypingState(generateWord(400).hiragana),
+  count: 0,
+  buttonEnabled: true,
+  startTime: 0,
+  finishTime: 0,
+  checkPointTime: 0,
+  checkPoint: 0,
+};
+
 function TypeAreaMockWithRuby() {
-  const [completedWords, setWordsCount] = useState(0)
-  const [onType, setonType] = useState(false)
-  const [wordLength, setWordLength] = useState(400)
-  const [baseKPM, setBaseKPM] = useState(600)
-  const [word, setWord] = useState(generateWord(wordLength))
-  const [words, setWords] = useState(wordSplit(word))
-  const [state, setState] = useState(initialState(word.hiragana))
-  const [count, setCount] = useState(0)
-  const [buttonEnabled, setButtonEnabled] = useState(true)
-  const [startTime, setStartTime] = useState(0)
-  const [finishTime, setFinishTime] = useState(0) // ms
-  const [checkPointTime, setCheckPointTime] = useState(0)
-  const [checkPoint, setCheckPoint] = useState(0)
+  const [typingState, setTypingState] = useState<TypingState>(initialTypingState);
   const [resultText, setResultText] = useState("乗るしかない、このビッグウェーブに")
   const newWord = useCallback((() =>{
-    let newWord = generateWord(wordLength)
-    setWord(newWord)
-    console.log("new word " + newWord.hiragana)
-    setState(initialState(newWord.hiragana))
-    setWords(wordSplit(newWord))
-  }), [wordLength])
+    let newWord = generateWord(typingState.wordLength)
+    setTypingState(prev => ({
+      ...prev,
+      word: newWord,
+      state: createInitialTypingState(newWord.hiragana),
+      words: wordSplit(newWord)
+    }))
+  }), [typingState.wordLength])
   const sortWord = useCallback(() => {
-    const newWord = sortAndJoin(words)
-    setWord(newWord)
-    setState(initialState(newWord.hiragana))
-    setWords(wordSplit(newWord))
-  }, [resultText])
+    const newWord = sortAndJoin(typingState.words)
+    setTypingState(prev => ({
+      ...prev,
+      word: newWord,
+      state: createInitialTypingState(newWord.hiragana),
+      words: wordSplit(newWord)
+    }))
+  }, [typingState.words])
   const click = (() => {
       newWord()
       countDown(3)
@@ -43,41 +70,54 @@ function TypeAreaMockWithRuby() {
   })
   const keyPress = (e: React.KeyboardEvent) => {
     let currentTime = Date.now()
-    if (isFinish(state)) {
+    if (isFinish(typingState.state)) {
       return
     }
-    let s = nextState(e.key, state)
-    setState(s)
-    if(e.key === " " && s.lastResult) {
-      let completedCount = completedWords+1
-      setWordsCount(completedCount)
-      let k = s.index - checkPoint
-      let checkTime = currentTime - checkPointTime
-      
-      let kpm = wordKPM(k, checkTime)
-      setCheckPoint(s.index)
-      setCheckPointTime(currentTime)
-      let nextWords = words
-      nextWords[completedCount-1].completed = kpm
-      setWords(nextWords)
-    }
-    if (isFinish(s)) {
-      let time = Date.now()
-      let elapsed = time - startTime
+    let s = nextState(e.key, typingState.state)
+    setTypingState(prev => {
+      if (e.key === " " && s.lastResult) {
+        let completedCount = prev.completedWords + 1
+        let k = s.index - prev.checkPoint
+        let checkTime = currentTime - prev.checkPointTime
+        
+        let kpm = wordKPM(k, checkTime)
+        let nextWords = [...prev.words]
+        nextWords[completedCount - 1].completed = kpm
 
-      setFinishTime(elapsed)
-      const length = s.index
-      let nextWords = words
+        return {
+          ...prev,
+          completedWords: completedCount,
+          checkPoint: s.index,
+          checkPointTime: currentTime,
+          words: nextWords,
+          state: s
+        }
+      }
 
-      // 最後のワードのkpm計算
-      let k = s.index - checkPoint
-      let checkTime = currentTime - checkPointTime
-      let kpm = wordKPM(k, checkTime)
-      nextWords[completedWords].completed = kpm
-      
-      setWords(nextWords)
-      setResultText(makeResultText(elapsed, length))
-    }
+      if (isFinish(s)) {
+        let time = Date.now()
+        let elapsed = time - prev.startTime
+
+        let k = s.index - prev.checkPoint
+        let checkTime = currentTime - prev.checkPointTime
+        let kpm = wordKPM(k, checkTime)
+        
+        let nextWords = [...prev.words]
+        nextWords[prev.completedWords].completed = kpm
+
+        return {
+          ...prev,
+          finishTime: elapsed,
+          words: nextWords,
+          state: s
+        }
+      }
+
+      return {
+        ...prev,
+        state: s
+      }
+    })
   }
   const keyDown = (e:React.KeyboardEvent) => {
     if(e.keyCode === 27) {
@@ -85,28 +125,39 @@ function TypeAreaMockWithRuby() {
     }
   }
   const escape = (() => {
-    setonType(false)
-    setButtonEnabled(true)
+    setTypingState(prev => ({
+      ...prev,
+      isTyping: false,
+      buttonEnabled: true
+    }))
     setTimeout(() => {
       let button = document.getElementById("startButton")
       button?.focus()
     }, 30);
   })
   const start = () => {
-    setWordsCount(0)
-    let st = Date.now()
-    setCheckPointTime(st)
-    setCheckPoint(0)
-    setStartTime(st)
-    setonType(true)
-    let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
-    element?.focus()
+    const st = Date.now()
+    setTypingState(prev => ({
+      ...prev,
+      completedWords: 0,
+      checkPointTime: st,
+      checkPoint: 0,
+      startTime: st,
+      isTyping: true
+    }))
+    setTimeout(() => {
+      let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
+      element?.focus()
+    }, 30)
   }
 
   const countDown = useCallback((n: number) => {
-    setButtonEnabled(false)
-    setCount(n)
-    if(!onType){
+    setTypingState(prev => ({
+      ...prev,
+      buttonEnabled: false,
+      count: n
+    }))
+    if(!typingState.isTyping){
       if (n == 0) {
         start()
       }else{
@@ -118,14 +169,20 @@ function TypeAreaMockWithRuby() {
   }, [])
 
   const selectLength = (value: string) => {
-    setWordLength(Number(value))
+    setTypingState(prev => ({
+      ...prev,
+      wordLength: Number(value)
+    }))
   }
   const selectBaseKPM = (value: string) => {
-    setBaseKPM(Number(value))
+    setTypingState(prev => ({
+      ...prev,
+      baseKPM: Number(value)
+    }))
   }
   
 
-  if(onType) {
+  if(typingState.isTyping) {
 
     return (
       <div>
@@ -151,22 +208,22 @@ function TypeAreaMockWithRuby() {
           </button>
           <div>
             {
-              isFinish(state) ? (
+              isFinish(typingState.state) ? (
                 <div>
-                  {state.index + "打 / " + (finishTime / 1000).toFixed(3) + "秒 = " + (state.index / finishTime * 60000).toFixed(2) + "kpm"}
+                  {typingState.state.index + "打 / " + (typingState.finishTime / 1000).toFixed(3) + "秒 = " + (typingState.state.index / typingState.finishTime * 60000).toFixed(2) + "kpm"}
                 </div>
                 ) : (
                   <Timer
-                  startTime={startTime}
+                  startTime={typingState.startTime}
                   digit={1}
                   />
                   )}
           </div>
           <div onKeyPress={keyPress} onKeyDown={keyDown} tabIndex={0} className="TypeArea">
             <TypeAreaWithRuby
-              words={words}
-              state={state}
-              baseKPM={baseKPM}
+              words={typingState.words}
+              state={typingState.state}
+              baseKPM={typingState.baseKPM}
               />
           </div>
         </div>
@@ -189,15 +246,15 @@ function TypeAreaMockWithRuby() {
           disabled={false}
         />
         <div className="Container">
-          <button onClick={click} id="startButton" disabled={!buttonEnabled}>
+          <button onClick={click} id="startButton" disabled={!typingState.buttonEnabled}>
             スタート
           </button>
-          <button onClick={sortedClick} disabled={!buttonEnabled || (finishTime == 0)}>
+          <button onClick={sortedClick} disabled={!typingState.buttonEnabled || (typingState.finishTime == 0)}>
           ソートしてやり直し
           </button>
           <div>
             <CountDownTimer
-            count={count}
+            count={typingState.count}
             />
           </div>
         </div>
