@@ -5,7 +5,7 @@ import TypeAreaWithRuby from './TypeAreaWithRuby';
 import CountDownTimer from './CountDownTimer';
 import Timer from './Timer';
 
-// 型定義の追加
+// 型定義の分離
 interface TypingState {
   completedWords: number;
   isTyping: boolean;
@@ -22,7 +22,7 @@ interface TypingState {
   checkPoint: number;
 }
 
-// 初期状態の定義
+// 初期状態の分離
 const initialTypingState: TypingState = {
   completedWords: 0,
   isTyping: false,
@@ -39,10 +39,12 @@ const initialTypingState: TypingState = {
   checkPoint: 0,
 };
 
-function TypeAreaMockWithRuby() {
+// タイピング関連のロジックをカスタムフックとして分離
+const useTypingLogic = () => {
   const [typingState, setTypingState] = useState<TypingState>(initialTypingState);
-  const [resultText, setResultText] = useState("乗るしかない、このビッグウェーブに")
-  const newWord = useCallback((() =>{
+  const [resultText, setResultText] = useState("乗るしかない、このビッグウェーブに");
+
+  const newWord = useCallback(() => {
     let newWord = generateWord(typingState.wordLength)
     setTypingState(prev => ({
       ...prev,
@@ -50,7 +52,8 @@ function TypeAreaMockWithRuby() {
       state: createInitialTypingState(newWord.hiragana),
       words: wordSplit(newWord)
     }))
-  }), [typingState.wordLength])
+  }, [typingState.wordLength]);
+
   const sortWord = useCallback(() => {
     const newWord = sortAndJoin(typingState.words)
     setTypingState(prev => ({
@@ -59,16 +62,9 @@ function TypeAreaMockWithRuby() {
       state: createInitialTypingState(newWord.hiragana),
       words: wordSplit(newWord)
     }))
-  }, [typingState.words])
-  const click = (() => {
-      newWord()
-      countDown(3)
-  })
-  const sortedClick = (() => {
-    sortWord()
-    countDown(3)
-  })
-  const keyPress = (e: React.KeyboardEvent) => {
+  }, [typingState.words]);
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     let currentTime = Date.now()
     if (isFinish(typingState.state)) {
       return
@@ -118,13 +114,15 @@ function TypeAreaMockWithRuby() {
         state: s
       }
     })
-  }
-  const keyDown = (e:React.KeyboardEvent) => {
+  }, [typingState.state]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if(e.keyCode === 27) {
       escape()
     }
-  }
-  const escape = (() => {
+  }, []);
+
+  const escape = useCallback(() => {
     setTypingState(prev => ({
       ...prev,
       isTyping: false,
@@ -134,8 +132,9 @@ function TypeAreaMockWithRuby() {
       let button = document.getElementById("startButton")
       button?.focus()
     }, 30);
-  })
-  const start = () => {
+  }, []);
+
+  const start = useCallback(() => {
     const st = Date.now()
     setTypingState(prev => ({
       ...prev,
@@ -149,7 +148,7 @@ function TypeAreaMockWithRuby() {
       let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
       element?.focus()
     }, 30)
-  }
+  }, []);
 
   const countDown = useCallback((n: number) => {
     setTypingState(prev => ({
@@ -166,38 +165,78 @@ function TypeAreaMockWithRuby() {
         }, 1000)
       }
     }
-  }, [])
+  }, [typingState.isTyping, start]);
 
-  const selectLength = (value: string) => {
+  const selectLength = useCallback((value: string) => {
     setTypingState(prev => ({
       ...prev,
       wordLength: Number(value)
     }))
-  }
-  const selectBaseKPM = (value: string) => {
+  }, []);
+
+  const selectBaseKPM = useCallback((value: string) => {
     setTypingState(prev => ({
       ...prev,
       baseKPM: Number(value)
     }))
-  }
-  
+  }, []);
+
+  return {
+    typingState,
+    resultText,
+    newWord,
+    sortWord,
+    handleKeyPress,
+    handleKeyDown,
+    escape,
+    start,
+    countDown,
+    selectLength,
+    selectBaseKPM
+  };
+};
+
+// メインコンポーネントの簡素化
+function TypeAreaMockWithRuby() {
+  const {
+    typingState,
+    resultText,
+    newWord,
+    sortWord,
+    handleKeyPress,
+    handleKeyDown,
+    escape,
+    start,
+    countDown,
+    selectLength,
+    selectBaseKPM
+  } = useTypingLogic();
+
+  const click = useCallback(() => {
+    newWord();
+    countDown(3);
+  }, [newWord, countDown]);
+
+  const sortedClick = useCallback(() => {
+    sortWord();
+    countDown(3);
+  }, [sortWord, countDown]);
 
   if(typingState.isTyping) {
-
     return (
       <div>
         <button
           onClick={() => window.open(`http://twitter.com/share?url=tk2-256-37539.vs.sakura.ne.jp/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
-          >
-            Twitterで共有する
+        >
+          Twitterで共有する
         </button>
         <SelectBaseSpeed
-        onSelect={selectBaseKPM}
-        disabled={true} 
+          onSelect={selectBaseKPM}
+          disabled={true} 
         />
         <SelectTypeLength
-        onSelect={selectLength}
-        disabled={true}
+          onSelect={selectLength}
+          disabled={true}
         />
         <div className="Container">
           <button onClick={click} id="startButton" disabled={true}>
@@ -207,39 +246,38 @@ function TypeAreaMockWithRuby() {
             ソートしてやり直し
           </button>
           <div>
-            {
-              isFinish(typingState.state) ? (
-                <div>
-                  {typingState.state.index + "打 / " + (typingState.finishTime / 1000).toFixed(3) + "秒 = " + (typingState.state.index / typingState.finishTime * 60000).toFixed(2) + "kpm"}
-                </div>
-                ) : (
-                  <Timer
-                  startTime={typingState.startTime}
-                  digit={1}
-                  />
-                  )}
+            {isFinish(typingState.state) ? (
+              <div>
+                {typingState.state.index + "打 / " + (typingState.finishTime / 1000).toFixed(3) + "秒 = " + (typingState.state.index / typingState.finishTime * 60000).toFixed(2) + "kpm"}
+              </div>
+            ) : (
+              <Timer
+                startTime={typingState.startTime}
+                digit={1}
+              />
+            )}
           </div>
-          <div onKeyPress={keyPress} onKeyDown={keyDown} tabIndex={0} className="TypeArea">
+          <div onKeyPress={handleKeyPress} onKeyDown={handleKeyDown} tabIndex={0} className="TypeArea">
             <TypeAreaWithRuby
               words={typingState.words}
               state={typingState.state}
               baseKPM={typingState.baseKPM}
-              />
+            />
           </div>
         </div>
       </div>
-    )
+    );
   } else {
     return (
       <div>
         <button
           onClick={() => window.open(`http://twitter.com/share?url=tk2-256-37539.vs.sakura.ne.jp/type/index.html&text=${resultText}&hashtags=TypeWave`, '_blank')}
-          >
-            Twitterで共有する
+        >
+          Twitterで共有する
         </button>
         <SelectBaseSpeed
-        onSelect={selectBaseKPM}
-        disabled={false}
+          onSelect={selectBaseKPM}
+          disabled={false}
         />
         <SelectTypeLength
           onSelect={selectLength}
@@ -250,16 +288,16 @@ function TypeAreaMockWithRuby() {
             スタート
           </button>
           <button onClick={sortedClick} disabled={!typingState.buttonEnabled || (typingState.finishTime == 0)}>
-          ソートしてやり直し
+            ソートしてやり直し
           </button>
           <div>
             <CountDownTimer
-            count={typingState.count}
+              count={typingState.count}
             />
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 
