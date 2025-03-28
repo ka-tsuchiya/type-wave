@@ -28,7 +28,7 @@ const initialTypingState: TypingState = {
 // タイピング関連のロジックをカスタムフックとして分離
 const useTypingLogic = (): TypingLogicReturn => {
   const [typingState, setTypingState] = useState<TypingState>(initialTypingState);
-  const [resultText] = useState(TYPING_CONSTANTS.DEFAULT_RESULT_TEXT);
+  const [resultText, setResultText] = useState<string>(TYPING_CONSTANTS.DEFAULT_RESULT_TEXT);
 
   const newWord = useCallback(() => {
     let newWord = generateWord(typingState.wordLength)
@@ -87,6 +87,8 @@ const useTypingLogic = (): TypingLogicReturn => {
         let nextWords = [...prev.words]
         nextWords[prev.completedWords].completed = kpm
 
+        setResultText(makeResultText(elapsed, s.index));
+
         return {
           ...prev,
           finishTime: elapsed,
@@ -114,6 +116,7 @@ const useTypingLogic = (): TypingLogicReturn => {
       isTyping: false,
       buttonEnabled: true
     }))
+    setResultText(TYPING_CONSTANTS.DEFAULT_RESULT_TEXT);
     setTimeout(() => {
       let button = document.getElementById("startButton")
       button?.focus()
@@ -130,6 +133,7 @@ const useTypingLogic = (): TypingLogicReturn => {
       startTime: st,
       isTyping: true
     }))
+    setResultText(TYPING_CONSTANTS.DEFAULT_RESULT_TEXT);
     setTimeout(() => {
       let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
       element?.focus()
