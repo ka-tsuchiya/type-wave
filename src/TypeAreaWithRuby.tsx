@@ -2,12 +2,13 @@ import React from 'react';
 import { displayRaman, TypingState } from './TypingCore';
 import './TypeArea.css';
 import { TypewellWord } from './TypeWell';
+import { TypeAreaWithRubyProps } from './types/typing';
 
 type TypeProps = {
   state: TypingState
 }
 
-function TypeAreaWithRuby(props: {words: TypewellWord[], state: TypingState, baseKPM: number}) {
+function TypeAreaWithRuby(props: TypeAreaWithRubyProps) {
   return (
     <div>
       <div className="japanese">

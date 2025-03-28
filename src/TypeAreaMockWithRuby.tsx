@@ -4,45 +4,31 @@ import { initialState as createInitialTypingState, isFinish, nextState } from '.
 import TypeAreaWithRuby from './TypeAreaWithRuby';
 import CountDownTimer from './CountDownTimer';
 import Timer from './Timer';
-
-// 型定義の分離
-interface TypingState {
-  completedWords: number;
-  isTyping: boolean;
-  wordLength: number;
-  baseKPM: number;
-  word: TypewellWord;
-  words: TypewellWord[];
-  state: ReturnType<typeof createInitialTypingState>;
-  count: number;
-  buttonEnabled: boolean;
-  startTime: number;
-  finishTime: number;
-  checkPointTime: number;
-  checkPoint: number;
-}
+import { TypingState, TypingLogicReturn } from './types/typing';
+import { TYPING_CONSTANTS, WORD_LENGTH_OPTIONS, BASE_KPM_OPTIONS } from './constants/typing';
 
 // 初期状態の分離
 const initialTypingState: TypingState = {
   completedWords: 0,
   isTyping: false,
-  wordLength: 400,
-  baseKPM: 600,
-  word: generateWord(400),
-  words: wordSplit(generateWord(400)),
-  state: createInitialTypingState(generateWord(400).hiragana),
+  wordLength: TYPING_CONSTANTS.DEFAULT_WORD_LENGTH,
+  baseKPM: TYPING_CONSTANTS.DEFAULT_BASE_KPM,
+  word: generateWord(TYPING_CONSTANTS.DEFAULT_WORD_LENGTH),
+  words: wordSplit(generateWord(TYPING_CONSTANTS.DEFAULT_WORD_LENGTH)),
+  state: createInitialTypingState(generateWord(TYPING_CONSTANTS.DEFAULT_WORD_LENGTH).hiragana),
   count: 0,
   buttonEnabled: true,
   startTime: 0,
   finishTime: 0,
   checkPointTime: 0,
   checkPoint: 0,
+  currentIndex: 0
 };
 
 // タイピング関連のロジックをカスタムフックとして分離
-const useTypingLogic = () => {
+const useTypingLogic = (): TypingLogicReturn => {
   const [typingState, setTypingState] = useState<TypingState>(initialTypingState);
-  const [resultText, setResultText] = useState("乗るしかない、このビッグウェーブに");
+  const [resultText] = useState(TYPING_CONSTANTS.DEFAULT_RESULT_TEXT);
 
   const newWord = useCallback(() => {
     let newWord = generateWord(typingState.wordLength)
@@ -131,7 +117,7 @@ const useTypingLogic = () => {
     setTimeout(() => {
       let button = document.getElementById("startButton")
       button?.focus()
-    }, 30);
+    }, TYPING_CONSTANTS.FOCUS_DELAY);
   }, []);
 
   const start = useCallback(() => {
@@ -147,7 +133,7 @@ const useTypingLogic = () => {
     setTimeout(() => {
       let element = document.getElementsByClassName('TypeArea')[0] as HTMLElement
       element?.focus()
-    }, 30)
+    }, TYPING_CONSTANTS.FOCUS_DELAY)
   }, []);
 
   const countDown = useCallback((n: number) => {
@@ -162,7 +148,7 @@ const useTypingLogic = () => {
       }else{
         setTimeout(() => {
           countDown(n - 1)
-        }, 1000)
+        }, TYPING_CONSTANTS.COUNTDOWN_INTERVAL)
       }
     }
   }, [typingState.isTyping, start]);
@@ -262,6 +248,8 @@ function TypeAreaMockWithRuby() {
               words={typingState.words}
               state={typingState.state}
               baseKPM={typingState.baseKPM}
+              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
             />
           </div>
         </div>
@@ -303,28 +291,20 @@ function TypeAreaMockWithRuby() {
 
 function SelectTypeLength(props: {onSelect: (value: string) => void, disabled: boolean}) {
   return (
-    <select onChange={(e) => props.onSelect(e.target.value)} disabled={props.disabled}>
-          <option value="100">100打</option>
-          <option value="200">200打</option>
-          <option value="400" selected>400打</option>
-        </select>
+    <select onChange={(e) => props.onSelect(e.target.value)} disabled={props.disabled} defaultValue={TYPING_CONSTANTS.DEFAULT_WORD_LENGTH.toString()}>
+      {WORD_LENGTH_OPTIONS.map(option => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
+    </select>
   )
 }
 
 function SelectBaseSpeed(props: {onSelect: (value: string) => void, disabled: boolean}) {
   return (
-    <select onChange={(e) => props.onSelect(e.target.value)} disabled={props.disabled}>
-      <option value="200">200kpm</option>
-      <option value="300">300kpm</option>
-      <option value="400">400kpm</option>
-      <option value="500">500kpm</option>
-      <option value="600" selected>600kpm</option>
-      <option value="700">700kpm</option>
-      <option value="800">800kpm</option>
-      <option value="900">900kpm</option>
-      <option value="1000">1000kpm</option>
-      <option value="1100">1100kpm</option>
-      <option value="1200">1200kpm</option>
+    <select onChange={(e) => props.onSelect(e.target.value)} disabled={props.disabled} defaultValue={TYPING_CONSTANTS.DEFAULT_BASE_KPM.toString()}>
+      {BASE_KPM_OPTIONS.map(option => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
     </select>
   )
 }
