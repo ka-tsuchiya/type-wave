@@ -1,5 +1,5 @@
-import { TypewellWord } from '../TypeWell';
-import { TypingState as TypingCoreState } from '../TypingCore';
+import { TypewellWord } from '../core/TypeWell';
+import { TypingState as TypingCoreState } from '../core/TypingCore';
 
 // TypingCoreのTypingState型を使用
 export interface State {

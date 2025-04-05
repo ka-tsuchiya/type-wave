@@ -1,8 +1,7 @@
 import React from 'react';
-import { displayRaman, TypingState } from './TypingCore';
-import './TypeArea.css';
-import { TypewellWord } from './TypeWell';
-import { TypeAreaWithRubyProps } from './types/typing';
+import { displayRaman, TypingState } from '../../core/TypingCore';
+import '../../styles/TypeArea.css';
+import { TypeAreaWithRubyProps } from '../../types/typing';
 
 type TypeProps = {
   state: TypingState
