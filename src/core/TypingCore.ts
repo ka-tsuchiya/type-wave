@@ -472,6 +472,19 @@ export function nextState(c: TypingInput, state: TypingState): TypingState {
     }
   }
 
+  if(state.ramans.some(x => x[i] === c && x[i+1] === c)) {
+    return {
+      ramans: state.ramans,
+      lastResult: true,
+      index: i+1,
+      mode: {
+        mode: "Force",
+        forceKey: c
+      },
+      lastInput: c
+    }
+  }
+
   if(state.ramans.some(x => x[i] === c)) {
     return {
       ramans: state.ramans,
