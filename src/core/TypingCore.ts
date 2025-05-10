@@ -14,8 +14,8 @@ type TypingRamans = string[]
 
 const conversionTable: ConvertElement[] = [
   {hiragana: "んうぁ", ramans: ["nwha"]},
-  {hiragana: "んうぃ", ramans: ["nWi"]},
-  {hiragana: "んうぇ", ramans: ["nWe"]},
+  {hiragana: "んうぃ", ramans: ["nwi", "nwH"]},
+  {hiragana: "んうぇ", ramans: ["nwe", "nwH"]},
   {hiragana: "んうぉ", ramans: ["nwho"]},
   {hiragana: "んあ", ramans: ["nna", "xna"]},
   {hiragana: "んい", ramans: ["nni", "xni"]},
@@ -109,9 +109,9 @@ const conversionTable: ConvertElement[] = [
   {hiragana: "でゅ", ramans: ["dhu"]},
   {hiragana: "でょ", ramans: ["dho"]},
   {hiragana: "うぁ", ramans: ["wha"]},
-  {hiragana: "うぃ", ramans: ["Wi", "Wi"]},
-  {hiragana: "うぇ", ramans: ["We", "We"]},
-  {hiragana: "うぉ", ramans: ["who", "Uxo", "Ulo"]},
+  {hiragana: "うぃ", ramans: ["wi", "wH"]},
+  {hiragana: "うぇ", ramans: ["we", "wH"]},
+  {hiragana: "うぉ", ramans: ["Who", "Uxo", "Ulo"]},
   {hiragana: "ふぁ", ramans: ["fa"]},
   {hiragana: "ふぃ", ramans: ["fi"]},
   {hiragana: "ふぇ", ramans: ["fe"]},
@@ -376,8 +376,8 @@ export function nextState(c: TypingInput, state: TypingState): TypingState {
         lastResult: true,
         index: i,
         mode: {
-          mode: "Force",
-          forceKey: "i"
+          mode: "Ban",
+          banKey: "h"
         },
         lastInput: c
       }
@@ -436,14 +436,14 @@ export function nextState(c: TypingInput, state: TypingState): TypingState {
         },
         lastInput: c
       }
-    } else if (upper === "W") { // "うぃ"をwhiでミスにしない
+    } else if (upper === "W") { // "うぉ"をwxoとwloを禁止
       return {
         ramans: state.ramans,
         lastResult: true,
         index: i+1,
         mode: {
-          mode: "Allow",
-          allowKey: "h"
+          mode: "Force",
+          forceKey: "h"
         },
         lastInput: c
       }
