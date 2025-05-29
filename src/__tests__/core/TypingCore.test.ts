@@ -236,20 +236,22 @@ describe('TypingCore', () => {
     });
   });
 
-  describe('hacked pattern(できたら修正する)', () => {
+  describe('既知の制限事項（将来的な改善対象）', () => {
     test.each([
       {
         hiragana: 'あっち',
         input: 'acti',
         expected: true,
-        description: '文字が違う促音3'
+        description: '促音の入力パターンが不完全（actiで「あっち」と入力可能）',
+        issue: '促音の入力パターンの検証が不十分'
       },
       {
         hiragana: 'だっちょう',
         input: 'datcyou',
         expected: true,
-        description: '促音と拗音の組み合わせ3(本来はダメだがなぜか通るパターン)'
-      },
+        description: '促音と拗音の組み合わせで不正な入力が許容される',
+        issue: '促音と拗音の組み合わせパターンの検証が不十分'
+      }
     ])('$description: $hiragana -> $input', ({ hiragana, input, expected }) => {
       let state = initialState(hiragana);
       for (const char of input) {
