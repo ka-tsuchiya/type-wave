@@ -236,6 +236,51 @@ describe('TypingCore', () => {
     });
   });
 
+  describe('missCount', () => {
+    test.each([
+      {
+        hiragana: 'てすと',
+        input: 'resuto',
+        expected: 5,
+        description: '不正な入力(最後のtは正しい入力なので)'
+      },
+      {
+        hiragana: 'うんぬん',
+        input: 'uxnnun',
+        expected: 0,
+        description: '正しい入力'
+      },
+      {
+        hiragana: 'うんぬん',
+        input: 'uxnnnun',
+        expected: 1,
+        description: '押しすぎた場合'
+      },
+      {
+        hiragana: 'かんじゃ',
+        input: 'kannzya',
+        expected: 0,
+        description: '正しい入力(n二回)'
+      },
+      {
+        hiragana: 'かんじゃ',
+        input: 'kaxnzya',
+        expected: 0,
+        description: '正しい入力(xn)'
+      },
+    ])('$description: $hiragana -> $input $expected', ({ hiragana, input, expected }) => {
+      let missCount = 0;
+      let state = initialState(hiragana);
+      for (const char of input) {
+        state = nextState(char, state);
+        if (!state.lastResult) {
+          missCount++;
+        }
+      }
+      expect(missCount).toBe(expected);
+    });
+  });
+
   describe('既知の制限事項（将来的な改善対象）', () => {
     test.each([
       {
