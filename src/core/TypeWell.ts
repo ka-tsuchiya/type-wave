@@ -7,6 +7,7 @@ export type TypewellWord = {
   completed: boolean | number
 }
 
+// ローマ字の長さが指定した長さ以上になる単語列を生成する
 export function generateWord(length: number): TypewellWord {
   let totalLength = 0
   let words: TypingWordBase[] = []
@@ -27,6 +28,7 @@ export function generateWord(length: number): TypewellWord {
   }
 }
 
+// 速さの結果順で並び替える
 export function sortAndJoin(words: TypewellWord[]) : TypewellWord {
   const sorted = words.sort((a,b) => {
     if (a.completed > b.completed) {
